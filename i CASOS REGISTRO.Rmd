@@ -1,0 +1,343 @@
+---
+title: 
+author: 
+date: 
+output:  
+   word_document:
+     reference_docx: Plantilla.docx
+---
+
+![](Baner%20nuevo%20Registro%202022.PNG)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+```
+
+# Casos incidentes de cáncer correspondientes a los años 2018 y 2019, registrados hasta la fecha por el Registro Poblacional de Cáncer del Partido de General Pueyrredon
+
+#### **Registro Poblacional de Cáncer del Partido de Gral. Pueyrredon, Departamento de Investigación Epidemiológica, Instituto Nacional de Epidemiología, "Dr. Juan H. Jara" (INE)**
+
+#### Mar del Plata, 26 de Septiembre de 2022
+
+## 
+
+##### 
+
+\newpage
+
+**Introducción**
+
+El Registro Poblacional de Cáncer del Partido de General Pueyrredon (RPC-PGP) realiza sus funciones en el Departamento de Investigación Epidemiológica del Instituto Nacional de Epidemiología "Dr. Juan H. Jara" (INE).
+
+El INE forma parte de la Administración Nacional de Laboratorios e Institutos en Salud (A.N.L.I.S.), la cual depende del Ministerio de Salud de la Nación.
+
+El Registro comenzó a funcionar a partir del 1º de enero del 2013 y forma parte de la red argentina de registros poblacionales, que se encuentra nucleada en el Instituto Nacional del Cáncer. Su equipo se encuentra conformado por los siguientes profesionales: Gabriel Amezqueta (Enfermero), Rodrigo Sabuda (Técnico en Imágenes), Christian Ballejo (Especialista en Informática), Sebastian Bienaimé (Médico Especialista en Medicina General y Familiar) y Ramiro Dana Smith (Médico Especialista en Medicina Interna y coordinador del Registro).
+
+El protocolo de recolección, clasificación y codificación de los datos se realiza siguiendo las normativas de la Agencia Internacional de Investigación en Cáncer (IARC, por sus siglas en inglés) , que es dependiente de la Organización Mundial de la Salud.
+
+Son registrados los casos incidentes de cáncer del Partido de General Pueyrredon (PGP) de forma anual. El análisis de los datos permite luego calcular tasas de incidencia de cáncer, para conocer el riesgo de enfermar de cáncer que presenta nuestra población, y compararlo con los datos de los demás Registros Poblacionales.
+
+El registro de cáncer forma parte de una estrategia de vigilancia epidemiológica que tiene como propósito indagar cuales son los tipos de cáncer de mayor incidencia en nuestra región, con el fin de implementar acciones adecuadamente direccionadas para la promoción de la salud y la prevención de la enfermedad.
+
+\newpage
+
+**Métodos**
+
+Este informe refleja la frecuencia de casos de cáncer de cada tipo de tumor según su sitio primario. Fueron incluidos asimismo los síndromes mielodisplásicos y mieloproliferativos, y los tumores intracraneales de comportamiento benigno o incierto por recomendación de la IARC.
+
+La muestra analizada corresponde al relevamiento realizado en el 75 % de las instituciones que asisten o diagnostican el cáncer en el Partido de General Pueyrredon.
+
+Para el procesamiento de las bases de datos y la visualización de resultados fue utilizado el lenguaje R, corriendo en entorno RStudio.
+
+**Resultados**
+
+```{r Graf, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+
+library(lubridate)
+
+library(readxl)
+
+library(flextable)
+
+library(janitor)
+
+library(cowplot)
+
+library(gtsummary)
+
+
+Base <- read_csv("2022 - 09 - 26.csv")
+
+Base <- Base %>% 
+  mutate (SITIO_DE_PRIMARIO = case_when(str_detect(string = Topografía, pattern = "^0") ~ "Labio, cavidad oral, glándulas salivales y faringe",
+                                                        str_detect(string = Topografía, pattern = "^11") ~ "Labio, cavidad oral, glándulas salivales y faringe",
+                                                        str_detect(string = Topografía, pattern = "^12") ~ "Labio, cavidad oral, glándulas salivales y faringe",
+                                                        str_detect(string = Topografía, pattern = "^13") ~ "Labio, cavidad oral, glándulas salivales y faringe",
+                                                        str_detect(string = Topografía, pattern = "^14") ~ "Labio, cavidad oral, glándulas salivales y faringe",
+                                                        str_detect(string = Topografía, pattern = "^15") ~ "Esófago",
+                                                        str_detect(string = Topografía, pattern = "^16") ~ "Estómago",
+                                                        str_detect(string = Topografía, pattern = "^17") ~ "Intestino delgado",
+                                                        str_detect(string = Topografía, pattern = "^18") ~ "Colorrectal",
+                                                        str_detect(string = Topografía, pattern = "^19") ~ "Colorrectal",
+                                                        str_detect(string = Topografía, pattern = "^20") ~ "Colorrectal",
+                                                        str_detect(string = Topografía, pattern = "^21") ~ "Ano y conducto anal",
+                                                        str_detect(string = Topografía, pattern = "^22") ~ "Hígado y vías biliares intrahepáticas",
+                                                        str_detect(string = Topografía, pattern = "^23") ~ "Vesícula biliar",
+                                                        str_detect(string = Topografía, pattern = "^24") ~ "Otras partes y las no especificadas de las vías biliares",
+                                                        str_detect(string = Topografía, pattern = "^25") ~ "Páncreas",
+                                                        str_detect(string = Topografía, pattern = "^26") ~ "Otras localizaciones y las mal definidas del aparato digestivo",
+                                                        str_detect(string = Topografía, pattern = "^300") ~ "Cavidad nasal",
+                                                        str_detect(string = Topografía, pattern = "^301") ~ "Oído medio",
+                                                        str_detect(string = Topografía, pattern = "^31") ~ "Senos paranasales",
+                                                        str_detect(string = Topografía, pattern = "^32") ~ "Laringe",
+                                                        str_detect(string = Topografía, pattern = "^33") ~ "Tráquea",
+                                                        str_detect(string = Topografía, pattern = "^34") ~ "Bronquios y Pulmón",
+                                                        str_detect(string = Topografía, pattern = "^37") ~ "Timo",
+                                                        str_detect(string = Topografía, pattern = "^38") ~ "Corazón, mediastino y pleura",
+                                                        str_detect(string = Topografía, pattern = "^39") ~ "Otros sitios y los mal definidos del sistema respiratrio y los órganos intratorácicos",
+                                                        str_detect(string = Topografía, pattern = "^40") ~ "Huesos, articulaciones y cartílago articular",
+                                                        str_detect(string = Topografía, pattern = "^41") ~ "Huesos, articulaciones y cartílago articular",
+                                                        str_detect(string = Topografía, pattern = "^42") ~ "Sistemas hematopoyético y reticuloendotelial",
+                                                        str_detect(string = Topografía, pattern = "^44") != str_detect(string = `Morfología (desc)`, pattern = "melanoma") ~ "Piel no melanoma",
+                                                        str_detect(string = `Morfología (desc)`, pattern = "melanoma") ~ "Melanoma",
+                                                        str_detect(string = Topografía, pattern = "^47") ~ "Nervios periféricos y sistema nervioso autónomo",
+                                                        str_detect(string = Topografía, pattern = "^48") ~ "Peritoneo y retroperitoneo",
+                                                        str_detect(string = Topografía, pattern = "^49") ~ "Tejido conjuntivo, subcutáneo y de otros tejidos blandos",
+                                                        str_detect(string = Topografía, pattern = "^50") ~ "Mama",
+                                                        str_detect(string = Topografía, pattern = "^51") ~ "Vulva",
+                                                        str_detect(string = Topografía, pattern = "^52") ~ "Vagina",
+                                                        str_detect(string = Topografía, pattern = "^53") ~ "Cuello uterino",
+                                                        str_detect(string = Topografía, pattern = "^54") ~ "Utero",
+                                                        str_detect(string = Topografía, pattern = "^55") ~ "Utero",
+                                                        str_detect(string = Topografía, pattern = "^56") ~ "Ovario",
+                                                        str_detect(string = Topografía, pattern = "^57") ~ "Otros órganos genitales femeninos y los no especificados",
+                                                        str_detect(string = Topografía, pattern = "^58") ~ "Placenta",
+                                                        str_detect(string = Topografía, pattern = "^60") ~ "Pene",
+                                                        str_detect(string = Topografía, pattern = "^61") ~ "Próstata",
+                                                        str_detect(string = Topografía, pattern = "^62") ~ "Testículos",
+                                                        str_detect(string = Topografía, pattern = "^63") ~ "Otros órganos genitales masculinos y los no especificados",
+                                                        str_detect(string = Topografía, pattern = "^64") ~ "Riñón",
+                                                        str_detect(string = Topografía, pattern = "^65") ~ "Vejiga, uréteres o pelvis renal",
+                                                        str_detect(string = Topografía, pattern = "^66") ~ "Vejiga, uréteres o pelvis renal",
+                                                        str_detect(string = Topografía, pattern = "^67") ~ "Vejiga, uréteres o pelvis renal",
+                                                        str_detect(string = Topografía, pattern = "^68") ~ "Otros órganos urinarios y los no especificados",
+                                                        str_detect(string = Topografía, pattern = "^69") ~ "Encéfalo, ojo y otras partes del sistema nervioso central",
+                                                        str_detect(string = Topografía, pattern = "^70") ~ "Encéfalo, ojo y otras partes del sistema nervioso central",
+                                                        str_detect(string = Topografía, pattern = "^71") ~ "Encéfalo, ojo y otras partes del sistema nervioso central",
+                                                        str_detect(string = Topografía, pattern = "^72") ~ "Encéfalo, ojo y otras partes del sistema nervioso central",
+                                                        str_detect(string = Topografía, pattern = "^73") ~ "Tiroides",
+                                                        str_detect(string = Topografía, pattern = "^74") ~ "Suprarrenales",
+                                                        str_detect(string = Topografía, pattern = "^75") ~ "Otras glándulas endocrinas y estructuras afines",
+                                                        str_detect(string = Topografía, pattern = "^76") ~ "Sitios mal definidos de las distintas localizaciones",
+                                                        str_detect(string = Topografía, pattern = "^77") ~ "Ganglios linfáticos",
+                                                        str_detect(string = Topografía, pattern = "^80") ~ "Sitio primario desconocido")) %>% 
+  mutate (AÑO = case_when(str_detect(string = `Fecha Diagnós.`, pattern = "^2013") ~ "2013",
+                          str_detect(string = `Fecha Diagnós.`, pattern = "^2014") ~ "2014",
+                          str_detect(string = `Fecha Diagnós.`, pattern = "^2015") ~ "2015",
+                          str_detect(string = `Fecha Diagnós.`, pattern = "^2016") ~ "2016",
+                          str_detect(string = `Fecha Diagnós.`, pattern = "^2017") ~ "2017",
+                          str_detect(string = `Fecha Diagnós.`, pattern = "^2018") ~ "2018",
+                          str_detect(string = `Fecha Diagnós.`, pattern = "^2019") ~ "2019",
+                          str_detect(string = `Fecha Diagnós.`, pattern = "^2020") ~ "2020",
+                          str_detect(string = `Fecha Diagnós.`, pattern = "^2021") ~ "2021")) 
+
+
+
+
+TOPOGRAFIAS_sin_multiples <- Base %>% filter(AÑO %in% c("2018", "2019"))%>%  rename(SEXO = `Sexo (desc)`, EDAD = Edad)
+                                   
+
+
+```
+
+```{r Resumen, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+Total_personas <- TOPOGRAFIAS_sin_multiples %>% 
+  count()
+
+Total_varones <- TOPOGRAFIAS_sin_multiples %>% 
+  filter(SEXO == "Masculino") %>% 
+  count()
+
+Porcentaje_varones <- TOPOGRAFIAS_sin_multiples %>% 
+  count() %>%  
+  mutate(Porc = round(100* Total_varones/ Total_personas, 1)) %>% 
+  select(Porc)
+
+Total_mujeres <- TOPOGRAFIAS_sin_multiples %>% 
+  filter(SEXO == "Femenino") %>% 
+  count()
+
+Porcentaje_mujeres <- TOPOGRAFIAS_sin_multiples %>% 
+  count() %>%  
+  mutate(Porc = round(100* Total_mujeres/ Total_personas, 1)) %>% 
+  select(Porc)
+
+media_edad_mujer <- round(mean(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$SEXO == "Femenino"], na.rm = T),1)
+
+media_edad_hombre <- round(mean(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$SEXO == "Masculino"], na.rm = T),1)
+ 
+desvio_edad_mujer <- round(sd(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$SEXO == "Femenino"], na.rm = T),1)
+
+desvio_edad_hombre <- round(sd(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$SEXO == "Masculino"], na.rm = T),1)
+```
+
+En el período 2018 - 2019, se registraron `r Total_personas` casos incidentes de cáncer en el RPC-PGP, [`r Total_mujeres` mujeres ( `r Porcentaje_mujeres` %) y `r Total_varones` varones ( `r Porcentaje_varones` %)]. El 48 % correspondió al año 2018 ( n = 2808) y el resto (52%) al 2019 ( n =3053).
+
+La media de edad de los casos de cáncer fue `r media_edad_mujer` años en mujeres (DS `r desvio_edad_mujer`) y `r media_edad_hombre` en varones (DS `r desvio_edad_hombre`).
+
+La Tabla 1 muestra la distribución de los casos incidentes por año según los principales sitios tumorales.
+
+```{r Distri, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+
+
+
+
+
+
+
+tabla2018 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2018) %>%
+      count(SITIO_DE_PRIMARIO, sort = T) %>%
+      rename(PRIMARIO = SITIO_DE_PRIMARIO, Frecuencia = n) 
+
+tabla2019 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2019) %>%
+      count(SITIO_DE_PRIMARIO, sort = T) %>%
+      rename(PRIMARIO = SITIO_DE_PRIMARIO, Frecuencia = n) 
+
+
+
+tabla2019[44:46,1] <- " "
+
+tabla <- bind_cols(tabla2018, tabla2019) %>% 
+      flextable() %>% theme_zebra() %>% 
+  delete_part(part = "header") %>% 
+      fontsize(size = 8, part = "all") %>% 
+      width(width = 1) %>% 
+  add_header(PRIMARIO...1 = "Sitio Primario", Frecuencia...2 = "Frec.", PRIMARIO...3 = "Sitio Primario",  Frecuencia...4 = "Frec.") %>% 
+  add_header(PRIMARIO...1 = "2018", Frecuencia...2 = "2018", PRIMARIO...3 = "2019",  Frecuencia...4 = "2019", top =T) %>% 
+  align(align = "center", part = "header") %>% 
+  merge_h(part = "header") %>% 
+  bold(bold = TRUE, part = "header") %>% 
+   add_header(PRIMARIO...1 = "Tabla 1:  Distribución de casos incidentes de cáncer por año  según sitio primario de localización, (RPC-PGP), años 2018 y 2019 (n=5861)", Frecuencia...2 = "Tabla 1:  Distribución de casos incidentes de cáncer por año  según sitio primario de localización, (RPC-PGP), años 2018 y 2019 (n=5861)", PRIMARIO...3 = "Tabla 1:  Distribución de casos incidentes de cáncer por año  según sitio primario de localización, (RPC-PGP), años 2018 y 2019 (n=5861)", Frecuencia...4 ="Tabla 1:  Distribución de casos incidentes de cáncer por año  según sitio primario de localización, (RPC-PGP), años 2018 y 2019 (n=5861)" ) %>% merge_h(part = "header") %>% bold(part = "header") %>% 
+  align(align = "center", part = "header")
+
+tabla
+
+
+
+```
+
+\newpage
+
+La Figura 1 permite comparar la frecuencia interanual de los diez principales sitios tumorales de los casos con dato completo en dicho campo (n=2808 en 2018; n= 3053 en 2019).
+
+La Tabla 2 exhibe la distribución de los casos por sexo, según localización del sitio primario.
+
+**Figura 1: Distribución comparativa de los diez principales sitios tumorales, RPC-PGP, años 2018 y 2019**
+
+```{r Princip, echo=FALSE,  message=FALSE, warning=FALSE}
+
+
+
+
+nt_2018 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2018) %>% nrow()
+
+n_2018 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2018, SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER") %>% nrow()
+
+
+nt_2019 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2019) %>% nrow()
+
+n_2019 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2019, SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER") %>% nrow()
+
+
+
+ ##POR LA INICIAL!!!!!!!!!!!!!!!!
+
+graf1 <- TOPOGRAFIAS_sin_multiples %>% 
+  filter(AÑO == 2018) %>% 
+  count(SITIO_DE_PRIMARIO, sort = T) %>% 
+  filter(SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER" ) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = fct_rev(fct_reorder(SITIO_DE_PRIMARIO, n, min)), y = n,fill = SITIO_DE_PRIMARIO)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c( "violetred3","tomato2","turquoise2",
+                                "springgreen2","goldenrod",
+                                "chocolate3","gray40","brown",  "blue",
+                                "olivedrab")) +
+theme(axis.text.x = element_text(angle = 45, hjust=1))	+ 
+  scale_y_continuous(limits = c(0,700), breaks = seq(0,700, by = 200)) +
+  xlab("") +
+  ylab("Frecuencia") +
+  guides(fill = "none") +
+  labs(title = "Año 2018",
+       caption = paste("N = ", n_2018, " de ", nt_2018)) 
+  
+
+graf2 <- TOPOGRAFIAS_sin_multiples %>% 
+  filter(AÑO == 2019) %>% 
+  count(SITIO_DE_PRIMARIO, sort = T) %>% 
+  filter(SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER" ) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = fct_rev(fct_reorder(SITIO_DE_PRIMARIO, n, min)), y = n,fill = SITIO_DE_PRIMARIO)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("violetred3","tomato2","turquoise2",
+                                "springgreen2","goldenrod",
+                               "chocolate3", "gray40", "brown",
+                               "blue", "olivedrab")) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))	+
+  scale_y_continuous(limits = c(0,700), breaks = seq(0,700, by = 200)) +
+  xlab("") +
+  ylab("Frecuencia") +
+  guides(fill = "none") +
+  labs(title = "Año 2019",
+       caption = paste("N = ", n_2019, " de ", nt_2019))  
+
+
+
+library(patchwork)
+  
+
+patchwork <- graf1 + graf2
+patchwork + plot_annotation(
+  title = ""
+)
+
+
+
+
+
+```
+
+**Tabla 2: Distribución absoluta y porcentual de casos incidentes de cáncer por sexo según localización del sitio primario, RPC-PGP, años 2018 y 2019.**
+
+```{r, warning=FALSE,message=FALSE, echo=F}
+
+library(gtsummary)
+
+TOPOGRAFIAS_sin_multiples %>% select(SITIO_DE_PRIMARIO, SEXO) %>% 
+  tbl_summary(by = SEXO,
+    statistic = list(all_categorical() ~ "{n} ({p}%)"),
+    digits = all_continuous() ~ 2,
+    label = SITIO_DE_PRIMARIO ~ "Sitio Primario",
+    missing_text = "S/D"
+  ) %>% 
+  modify_header(update = list(
+  label ~ "**Variable**"
+)) %>% as_flex_table() 
+  
+  
+  
+  # Frecuencias absolutas y relativas de casos de cáncer por sexo y según localización"
+```
+
+\newpage
+
+**Comentarios finales**
+
+Los datos aquí mostrados formarán parte de los informes de incidencias anuales del RPC-PGP. En este sentido, la calidad de sus datos contribuye a la generación de información precisa y válida sobre la magnitud de ocurrencia del cáncer en el partido, posibilitando asimismo la comparación con otras localidades y el análisis de tendencia.
