@@ -1,0 +1,235 @@
+---
+title: 
+author: 
+date: 
+output: 
+   word_document:
+      reference_docx: Plantilla.docx
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+```
+
+![](Baner%20principal%20INE%202021.jpg)
+
+# Distribución de los casos incidentes de cáncer según sexo y localidad de procedencia
+
+# Hospital Interzonal Especializado Materno Infantil (HIEMI)
+
+# Años 2018, 2019 y 2020
+
+# 
+
+## 
+
+#### **Registro Poblacional de Cáncer del Partido de Gral. Pueyrredón, Departamento de Investigación Epidemiológica, Instituto Nacional de Epidemiología, "Dr. Juan H. Jara" (INE)**
+
+#### 
+
+#### **Mar del Plata, 8 de Marzo de 2022**
+
+\newpage
+
+**Introducción**
+
+El Registro Poblacional de Cáncer del Partido de General Pueyrredón (RPGP) realiza sus funciones en el Departamento de Investigación Epidemiológica del Instituto Nacional de Epidemiología "Dr. Juan H. Jara" (INE).
+
+El INE forma parte de la Administración Nacional de Laboratorios e Institutos en Salud (A.N.L.I.S.), la cual depende del Ministerio de Salud de la Nación.
+
+El Registro comenzó a funcionar a partir del 1º de enero del 2013 y forma parte de la red argentina de registros poblacionales, que se encuentra nucleada en el Instituto Nacional del Cáncer. Su equipo se encuentra conformado por los siguientes profesionales:
+
+Gabriel Amezqueta (Enfermero), Rodrigo Sabuda (Técnico en Imágenes), Christian Ballejo (Especialista en Informática), Sebastian Bienaimé (Médico Especialista en Medicina General y Familiar) y Ramiro Dana Smith (Médico Especialista en Medicina Interna y referente del Registro).
+
+El protocolo de recolección, clasificación y codificación de los datos se realiza siguiendo las normativas de la Agencia Internacional de Investigación en Cáncer, que es dependiente de la Organización Mundial de la Salud.
+
+Son registrados los casos incidentes de cáncer del Partido de General Pueyrredón (PGP) de forma anual. El análisis de los datos permite luego calcular tasas de incidencia de cáncer, para conocer el riesgo de enfermar de cáncer que presenta nuestra población, y compararlo con los datos de los demás Registros Poblacionales.
+
+El registro de cáncer forma parte de una estrategia de vigilancia epidemiológica que tiene como propósito indagar cuales son los tipos de cáncer de mayor incidencia en nuestra región, con el fin de implementar acciones adecuadamente direccionadas para la promoción y prevención de la salud.
+
+\newpage
+
+**Métodos**
+
+Este informe refleja la frecuencia de casos incidentes de cáncer asistidos en el HIEMI según sexo y el lugar de procedencia de los individuos. Fueron incluidos también los síndromes mielodisplásicos y mieloproliferativos, así como los tumores intracraneales benignos.
+
+La muestra analizada corresponde a la totalidad de casos cargados en el sistema del ROHA (Registro Oncopediátrico Hospitalario Argentino) desde el Servicio de Oncología del Hospital Interzonal Especializado Materno Infantil durante el período comprendido entre el 1º de Enero de 2018 y el 31 de Diciembre de 2020, a los cuales se les sumaron casos aún no cargados, pero asistidos en dicho Servicio durante el período mencionado.
+
+Para el procesamiento de las bases de datos y la visualización de resultados fue utilizado el lenguaje R, corriendo en entorno RStudio.
+
+**Resultados**
+
+En el período 2018 - 2020, hubo 79 casos incidentes de cáncer asistidos en el HIEMI, 39 mujeres (49,4%), 40 varones (50,6%).
+
+La media de edad de los casos de cáncer fue 7.5 años en las mujeres (DS 4.7) y 7.3 en los varones (DS 4.5).
+
+\newpage
+
+El siguiente gráfico refleja la distribución de los casos incidentes de cáncer según sexo, agrupados según año de incidencia.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+```
+
+```{r sexo según año de incidencia, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+
+library(lubridate)
+
+library(readxl)
+
+library(flextable)
+
+library(janitor)
+
+library(cowplot)
+
+library(ggrepel)
+
+
+Base_HIEMI <- read_csv("2022 - 03 - 09.csv")
+
+Base_HIEMI  <- Base_HIEMI %>% 
+  mutate (SITIO_DE_PRIMARIO = case_when(str_detect(string = Topografía, pattern = "^0") ~ "Labio, cavidad oral, glándulas salivales y faringe",
+                                                        str_detect(string = Topografía, pattern = "^11") ~ "Labio, cavidad oral, glándulas salivales y faringe",
+                                                        str_detect(string = Topografía, pattern = "^12") ~ "Labio, cavidad oral, glándulas salivales y faringe",
+                                                        str_detect(string = Topografía, pattern = "^13") ~ "Labio, cavidad oral, glándulas salivales y faringe",
+                                                        str_detect(string = Topografía, pattern = "^14") ~ "Labio, cavidad oral, glándulas salivales y faringe",
+                                                        str_detect(string = Topografía, pattern = "^15") ~ "Esófago",
+                                                        str_detect(string = Topografía, pattern = "^16") ~ "Estómago",
+                                                        str_detect(string = Topografía, pattern = "^17") ~ "Intestino delgado",
+                                                        str_detect(string = Topografía, pattern = "^18") ~ "Colorrectal",
+                                                        str_detect(string = Topografía, pattern = "^19") ~ "Colorrectal",
+                                                        str_detect(string = Topografía, pattern = "^20") ~ "Colorrectal",
+                                                        str_detect(string = Topografía, pattern = "^21") ~ "Ano y conducto anal",
+                                                        str_detect(string = Topografía, pattern = "^22") ~ "Hígado y vías biliares intrahepáticas",
+                                                        str_detect(string = Topografía, pattern = "^23") ~ "Vesícula biliar",
+                                                        str_detect(string = Topografía, pattern = "^24") ~ "Otras partes y las no especificadas de las vías biliares",
+                                                        str_detect(string = Topografía, pattern = "^25") ~ "Páncreas",
+                                                        str_detect(string = Topografía, pattern = "^26") ~ "Otras localizaciones y las mal definidas del aparato digestivo",
+                                                        str_detect(string = Topografía, pattern = "^300") ~ "Cavidad nasal",
+                                                        str_detect(string = Topografía, pattern = "^301") ~ "Oído medio",
+                                                        str_detect(string = Topografía, pattern = "^31") ~ "Senos paranasales",
+                                                        str_detect(string = Topografía, pattern = "^32") ~ "Laringe",
+                                                        str_detect(string = Topografía, pattern = "^33") ~ "Tráquea",
+                                                        str_detect(string = Topografía, pattern = "^34") ~ "Bronquios y Pulmón",
+                                                        str_detect(string = Topografía, pattern = "^37") ~ "Timo",
+                                                        str_detect(string = Topografía, pattern = "^38") ~ "Corazón, mediastino y pleura",
+                                                        str_detect(string = Topografía, pattern = "^39") ~ "Otros sitios y los mal definidos del sistema respiratrio y los órganos intratorácicos",
+                                                        str_detect(string = Topografía, pattern = "^40") ~ "Huesos, articulaciones y cartílago articular",
+                                                        str_detect(string = Topografía, pattern = "^41") ~ "Huesos, articulaciones y cartílago articular",
+                                                        str_detect(string = Topografía, pattern = "^42") ~ "Sistemas hematopoyético y reticuloendotelial",
+                                                        str_detect(string = Topografía, pattern = "^44") != str_detect(string = `Morfología (desc)`, pattern = "melanoma") ~ "Piel no melanoma",
+                                                        str_detect(string = `Morfología (desc)`, pattern = "melanoma") ~ "Melanoma",
+                                                        str_detect(string = Topografía, pattern = "^47") ~ "Nervios periféricos y sistema nervioso autónomo",
+                                                        str_detect(string = Topografía, pattern = "^48") ~ "Peritoneo y retroperitoneo",
+                                                        str_detect(string = Topografía, pattern = "^49") ~ "Tejido conjuntivo, subcutáneo y de otros tejidos blandos",
+                                                        str_detect(string = Topografía, pattern = "^50") ~ "Mama",
+                                                        str_detect(string = Topografía, pattern = "^51") ~ "Vulva",
+                                                        str_detect(string = Topografía, pattern = "^52") ~ "Vagina",
+                                                        str_detect(string = Topografía, pattern = "^53") ~ "Cuello uterino",
+                                                        str_detect(string = Topografía, pattern = "^54") ~ "Utero",
+                                                        str_detect(string = Topografía, pattern = "^55") ~ "Utero",
+                                                        str_detect(string = Topografía, pattern = "^56") ~ "Ovario",
+                                                        str_detect(string = Topografía, pattern = "^57") ~ "Otros órganos genitales femeninos y los no especificados",
+                                                        str_detect(string = Topografía, pattern = "^58") ~ "Placenta",
+                                                        str_detect(string = Topografía, pattern = "^60") ~ "Pene",
+                                                        str_detect(string = Topografía, pattern = "^61") ~ "Próstata",
+                                                        str_detect(string = Topografía, pattern = "^62") ~ "Testículos",
+                                                        str_detect(string = Topografía, pattern = "^63") ~ "Otros órganos genitales masculinos y los no especificados",
+                                                        str_detect(string = Topografía, pattern = "^64") ~ "Riñón",
+                                                        str_detect(string = Topografía, pattern = "^65") ~ "Vejiga, uréteres o pelvis renal",
+                                                        str_detect(string = Topografía, pattern = "^66") ~ "Vejiga, uréteres o pelvis renal",
+                                                        str_detect(string = Topografía, pattern = "^67") ~ "Vejiga, uréteres o pelvis renal",
+                                                        str_detect(string = Topografía, pattern = "^68") ~ "Otros órganos urinarios y los no especificados",
+                                                        str_detect(string = Topografía, pattern = "^69") ~ "Encéfalo, ojo y otras partes del sistema nervioso central",
+                                                        str_detect(string = Topografía, pattern = "^70") ~ "Encéfalo, ojo y otras partes del sistema nervioso central",
+                                                        str_detect(string = Topografía, pattern = "^71") ~ "Encéfalo, ojo y otras partes del sistema nervioso central",
+                                                        str_detect(string = Topografía, pattern = "^72") ~ "Encéfalo, ojo y otras partes del sistema nervioso central",
+                                                        str_detect(string = Topografía, pattern = "^73") ~ "Tiroides",
+                                                        str_detect(string = Topografía, pattern = "^74") ~ "Suprarrenales",
+                                                        str_detect(string = Topografía, pattern = "^75") ~ "Otras glándulas endocrinas y estructuras afines",
+                                                        str_detect(string = Topografía, pattern = "^76") ~ "Sitios mal definidos de las distintas localizaciones",
+                                                        str_detect(string = Topografía, pattern = "^77") ~ "Ganglios linfáticos",
+                                                        str_detect(string = Topografía, pattern = "^80") ~ "Sitio primario desconocido")) %>% 
+  mutate (AÑO = case_when(str_detect(string = `Fecha Diagnós.`, pattern = "^2018") ~ "2018", 
+                          str_detect(string = `Fecha Diagnós.`, pattern = "^2019") ~ "2019",
+                          str_detect(string = `Fecha Diagnós.`, pattern = "^2020") ~ "2020",
+                          str_detect(string = `Fecha Diagnós.`, pattern = "^2021") ~ "2021"))
+
+
+TOPOGRAFIAS_sin_multiples <- Base_HIEMI %>% filter(AÑO %in% c("2018", "2019", "2020")) %>%  rename(SEXO = `Sexo (desc)`)
+
+Nt <- TOPOGRAFIAS_sin_multiples %>% nrow()
+
+TOPOGRAFIAS_sin_multiples %>%
+   ggplot(aes(x = AÑO, fill = SEXO)) + geom_bar(stack = "identity") +
+  xlab("") +
+  ylab("Frecuencia")+
+  labs(title = "Distribución de casos incidentes de cáncer según año de incidencia y sexo. HIEMI, 2018 - 2020 (N= 79)",
+       caption = paste("N = ", Nt))
+
+```
+
+\newpage
+
+Los siguientes gráficos muestran la distribución de los casos incidentes de cáncer, según procedencia.
+
+```{r distribución según lugar de procedencia del paciente,entre de Gral Pueyrredon y el resto, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+
+TOPOGRAFIAS_sin_multiples <-  TOPOGRAFIAS_sin_multiples %>% mutate(LOCALIDAD = case_when(str_detect(string = `Estado caso`, pattern = "1" )~ "GENERAL PUEYRREDON",
+TRUE  ~   "OTRAS LOCALIDADES"                                                          ))
+
+
+library(scales)
+
+TOPOGRAFIAS_sin_multiples %>%                                      
+  group_by(LOCALIDAD) %>%                    
+  summarise(Cantidad = n()) %>%
+  mutate(fraccion = Cantidad/sum(Cantidad),
+         ymax = cumsum(fraccion),
+         ymin = c(0, head(ymax, n=-1)), etiqueta = number(fraccion,accuracy = 0.1, scale = 100, decimal.mark = ",")) %>%
+  ggplot(aes(fill= LOCALIDAD, ymax=ymax, ymin=ymin, xmax=4, xmin=3)) +
+  geom_rect() +
+  coord_polar(theta="y") +
+  xlim(c(0, 4)) +
+  theme_bw() +
+  theme(panel.grid=element_blank()) +
+  theme(axis.text=element_blank()) +
+  theme(axis.ticks=element_blank()) +
+  annotate("text", x = 0, y = 0, label = "PROCEDENCIA") +
+  scale_fill_brewer(palette = "Set3",
+                    name="", direction = 1) +
+  labs(title="",x="",y="", 
+       caption = paste("N = ", Nt)) +
+  geom_text_repel(aes(x = 4, y = ymax-((ymax-ymin)/2),
+                      label = paste0(etiqueta, "%")), point.padding = 0.1,
+                  nudge_x = 0.7, nudge_y = 0.01)
+
+
+
+```
+
+```{r ditribución según localidad de origen NO GRAL PUEYRREDON , echo=FALSE, message=FALSE, warning=FALSE}
+
+N <- TOPOGRAFIAS_sin_multiples %>% filter(`Estado caso` == "2") %>% nrow()
+
+TOPOGRAFIAS_sin_multiples %>% 
+  filter(`Estado caso` == "2") %>% group_by(Profesional) %>% count() %>% 
+  ggplot(aes(x = fct_rev(fct_reorder(Profesional, n, min)), y = n,fill = Profesional)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c( "tomato2","steelblue4","olivedrab","pink2","gray40","chocolate3", "springgreen2","turquoise2", "goldenrod","salmon2", "blue", "orange")) +
+theme(axis.text.x = element_text(angle = 45, hjust=1))	+ 
+  scale_y_continuous(limits = c(0,15), breaks = seq(0,15, by = 5)) +
+  xlab("") +
+  ylab("Frecuencia") +
+  guides(fill = "none") +
+  labs(title = "Procedencia distinta de Gral. Pueyrredón",
+       caption = paste("N = ", N)) 
+```
+
+**Comentarios finales**
+
+Los datos aportados por el HIEMI formarán parte de los informes de incidencia de cáncer anuales producidos por el RPGP. En este sentido, la calidad de sus datos contribuye a la generación de información precisa y válida sobre la magnitud de ocurrencia del cáncer en el Partido de General Pueyrredón, posibilitando asimismo la comparación con otras localidades y el análisis de tendencia.
