@@ -1,0 +1,677 @@
+---
+title: 
+author: 
+date: 
+output:  
+   word_document:
+     reference_docx: Plantilla.docx
+---
+
+![](Baner%20principal%20INE%202021.jpg)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+
+##INSTRUCCIONES: 1. CAMBIAR INSTITUCION/PROFESIONAL, DIRECCION , AÑOS Y FECHA.2.MODIFICAR COLORES DE LOS GRAFICOS DE BARRAS SEGUN FRECUENCIAS DE PRIMARIOS
+
+
+```
+
+# CASOS INCIDENTES DE CANCER
+
+## Años 2018, 2019, 2020
+
+# Laboratorio de la Dra. Mabel POMAR
+
+## Calle La Rioja 2042
+
+## 
+
+#### **Registro Poblacional de Cáncer del Partido de Gral. Pueyrredón, Departamento de Investigación Epidemiológica, Instituto Nacional de Epidemiología, "Dr. Juan H. Jara" (INE)**
+
+#### 
+
+#### **Mar del Plata, 19 de octubre de 2021**
+
+## 
+
+##### 
+
+\newpage
+
+**Introducción**
+
+El Registro Poblacional de Cáncer del Partido de General Pueyrredón realiza sus funciones en el Departamento de Investigación Epidemiológica del Instituto Nacional de Epidemiología "Dr. Juan H. Jara" (INE).
+
+El INE forma parte de la Administración Nacional de Laboratorios e Institutos en Salud (A.N.L.I.S.), la cual depende del Ministerio de Salud de la Nación.
+
+El Registro comenzó a funcionar a partir del 1º de enero del 2013 y forma parte de la red argentina de registros poblacionales, que se encuentra nucleada en el Instituto Nacional del Cáncer. Su equipo se encuentra conformado por los siguientes profesionales:
+
+Gabriel Amezqueta (Enfermero), Rodrigo Sabuda (Técnico en Imágenes), Christian Ballejo (Especialista en Informática), Sebastian Bienaimé (Médico Especialista en Medicina General y Familiar) y Ramiro Dana Smith (Médico Especialista en Medicina Interna y referente del Registro).
+
+El protocolo de recolección, clasificación y codificación de los datos se realiza siguiendo las normativas de la Agencia Internacional de Investigación en Cáncer, que es dependiente de la Organización Mundial de la Salud.
+
+Son registrados los casos incidentes de cáncer del Partido de General Pueyrredón de forma anual. El análisis de los datos permite luego calcular tasas de incidencia de cáncer, para conocer el riesgo de enfermar de cáncer que presenta nuestra población, y compararlo con los datos de los demás Registros Poblacionales.
+
+El registro de cáncer forma parte de una estrategia de vigilancia epidemiológica que tiene como propósito indagar cuales son los tipos de cáncer de mayor incidencia en nuestra región, con el fin de implementar acciones adecuadamente direccionadas para la promoción y prevención de la salud.
+
+\newpage
+
+**Resultados**
+
+Este informe refleja la frecuencia de casos de cáncer según cada sitio de tumor primario. Fueron incluidos también los síndromes mielodisplásicos y mieloproliferativos, y los tumores intracraneales benignos.
+
+Para el procesamiento de las bases de datos y la visualización de resultados fue utilizado el lenguaje R, corriendo en entorno RStudio.
+
+La siguiente tabla muestra la frecuencia de casos de comportamiento maligno según año de registro.
+
+```{r Gráfico de totales, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+
+library(lubridate)
+
+library(readxl)
+
+library(flextable)
+
+library(janitor)
+
+library(cowplot)
+
+
+Base <- read_xlsx("BASE SIN PAPS POMAR  2018 2019 2020.xlsx") 
+
+
+Base <- Base %>%
+  mutate(`FECHA NAC`= ymd_hms(`FECHA NAC`), `FECHA RECEP` = ymd_hms(`FECHA RECEP`)) %>% 
+  mutate(`FECHA NAC` =  as_date(`FECHA NAC`),
+         `FECHA RECEP` = as_date(`FECHA RECEP`)) %>%  
+  mutate(TOPOGRAFIA = str_to_upper(TOPOGRAFIA), DIAGNOSTICO = str_to_upper(DIAGNOSTICO))
+
+
+BASE_SINPAPS <- Base %>% mutate (CANCER = case_when(str_detect(string = DIAGNOSTICO, pattern = "CARCINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LINFOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINOIDE") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MELANOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LEUCEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SARCOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLASMOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MESOTELIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "ASTROCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "OLIGODENDROGLIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MENINGIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GLIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "EPENDIMOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLEXOS COROIDEOS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLEXO COROIDES") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PINEOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MEDULOEPITELIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SCHWANNOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HEMANGIOPERICITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOPROLIF") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELODISPLAS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HISTIOCITOSIS DE CELULAS DE LANGERHANS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MATASTASIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "TUMOR MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "NEOPLASIA MALIGNA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "NEOPLASICO MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINOMATOSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALIGNA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PROLACTINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "FEOCROMOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SARCOMATOSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SEMINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GERMINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "INVASOR") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "INVASORA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GERMINALES") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "POLIEMBRIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HIPERNEFROMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HODGKIN") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MICOSIS FUNGOIDE") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SINDROME DE SEZARY") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALTOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MASTOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTICO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTICA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MACROGLOBULINEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "POLICITEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOESCLEROSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOFIBROSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "TROMBOCITOPENIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BOWEN ") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SERTOLI") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LEYDIG") ~ "SI",                                                                                                       str_detect(string =                                                                                      DIAGNOSTICO, pattern = "ANEMIA REFRACTARIA") ~ "SI")) %>% 
+  mutate (AÑO = case_when(str_detect(string = `FECHA RECEP`, pattern = "^2018") ~ "2018", 
+                          str_detect(string = `FECHA RECEP`, pattern = "^2019") ~ "2019",
+                          str_detect(string = `FECHA RECEP`, pattern = "^2020") ~ "2020"))
+
+
+POSITIVOS <- BASE_SINPAPS %>% filter(CANCER == "SI") %>% 
+  select(`NRO INF`, NOMBRE, SEXO, `NRO DOC`, `FECHA NAC`,`FECHA RECEP`, EDAD,TOPOGRAFIA, DIAGNOSTICO, DOMICILIO, LOCALIDAD, AÑO) %>% 
+  arrange(`NRO DOC`)
+
+POSITIVOS %>%  count(AÑO) %>%  rename(Frecuencia = n) %>% 
+  flextable() %>% autofit() %>%  theme_zebra() %>% add_header(AÑO = "Total de casos de cáncer por año", Frecuencia = "Total de casos de cáncer por año") %>% merge_h(part = "header") %>% bold(part = "header")
+
+```
+
+Para elaborar las frecuencias de las principales localizaciones de cáncer, se decidió considerar las 12 localizaciones más frecuentes en el año 2018 en Argentina (excluido el cáncer de piel no melanoma) según estimaciones de la Agencia Internacional de Investigación sobre Cáncer (IARC).
+
+Asimismo de forma electiva, se decidió también considerar las siguientes categorías no incluidas dentro de las 12 principales: mieloma, adenocarcinoma de útero, metástasis hepáticas (incluidas globalmente), hepatocarcinoma, cáncer de esófago, cáncer de piel melanoma y cáncer de piel no melanoma.
+
+\newpage
+
+```{r Distribución de los sitios primarios, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+
+library(lubridate)
+
+library(readxl)
+
+library(scales)
+
+library(ggrepel)
+
+
+
+Base <- read_xlsx("BASE SIN PAPS POMAR  2018 2019 2020.xlsx") 
+
+
+Base <- Base %>%
+  mutate(`FECHA NAC`= ymd_hms(`FECHA NAC`), `FECHA RECEP` = ymd_hms(`FECHA RECEP`)) %>% 
+  mutate(`FECHA NAC` =  as_date(`FECHA NAC`),
+         `FECHA RECEP` = as_date(`FECHA RECEP`)) %>%  
+  mutate(TOPOGRAFIA = str_to_upper(TOPOGRAFIA), DIAGNOSTICO = str_to_upper(DIAGNOSTICO))
+
+
+BASE_SINPAPS <- Base %>% mutate (CANCER = case_when(str_detect(string = DIAGNOSTICO, pattern = "CARCINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LINFOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINOIDE") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MELANOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LEUCEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SARCOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLASMOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MESOTELIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "ASTROCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "OLIGODENDROGLIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MENINGIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GLIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "EPENDIMOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLEXOS COROIDEOS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLEXO COROIDES") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PINEOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MEDULOEPITELIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SCHWANNOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HEMANGIOPERICITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOPROLIF") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELODISPLAS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HISTIOCITOSIS DE CELULAS DE LANGERHANS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MATASTASIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "TUMOR MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "NEOPLASIA MALIGNA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "NEOPLASICO MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINOMATOSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALIGNA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PROLACTINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "FEOCROMOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SARCOMATOSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SEMINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GERMINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "INVASOR") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "INVASORA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GERMINALES") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "POLIEMBRIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HIPERNEFROMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HODGKIN") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MICOSIS FUNGOIDE") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SINDROME DE SEZARY") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALTOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MASTOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTICO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTICA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MACROGLOBULINEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "POLICITEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOESCLEROSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOFIBROSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "TROMBOCITOPENIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BOWEN ") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SERTOLI") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LEYDIG") ~ "SI",                                                                                                       str_detect(string =                                                                                      DIAGNOSTICO, pattern = "ANEMIA REFRACTARIA") ~ "SI")) %>% 
+  mutate (AÑO = case_when(str_detect(string = `FECHA RECEP`, pattern = "^2018") ~ "2018", 
+                          str_detect(string = `FECHA RECEP`, pattern = "^2019") ~ "2019",
+                          str_detect(string = `FECHA RECEP`, pattern = "^2020") ~ "2020"))
+
+
+POSITIVOS <- BASE_SINPAPS %>% filter(CANCER == "SI") %>% 
+  select(`NRO INF`, NOMBRE, SEXO, `NRO DOC`, `FECHA NAC`,`FECHA RECEP`, EDAD,TOPOGRAFIA, DIAGNOSTICO, DOMICILIO, LOCALIDAD, AÑO) %>% 
+  arrange(`NRO DOC`)
+
+
+
+TOPOGRAFIAS_sin_multiples <- POSITIVOS %>% distinct(NOMBRE, .keep_all = TRUE) %>% 
+  mutate(SITIO_DE_PRIMARIO = case_when(
+  str_detect(string = TOPOGRAFIA, pattern = "MAMA") ~ "MAMA",
+  str_detect(string = TOPOGRAFIA, pattern = "COLON|RECT") ~ "COLON-RECTO",
+  str_detect(string = TOPOGRAFIA, pattern = "PROST") ~ "PROSTATA",
+  str_detect(string = TOPOGRAFIA, pattern = "PULM") ~ "PULMON",
+  str_detect(string = TOPOGRAFIA, pattern = "RIÑ") ~ "RENAL",
+  str_detect(string = TOPOGRAFIA, pattern = " PANCR") ~ "PANCREAS",
+  str_detect(string = TOPOGRAFIA, pattern = "CERVIX") ~ "CERVIX, incluido in situ",
+  str_detect(string = TOPOGRAFIA, pattern = "CUELLO UTERINO") ~ "CERVIX, incluido in situ",
+  str_detect(string = TOPOGRAFIA, pattern = "ESTOMAGO") ~ "ESTOMAGO",
+  str_detect(string = TOPOGRAFIA, pattern = "GASTRIC") ~ "ESTOMAGO",
+  str_detect(string = TOPOGRAFIA, pattern = "VEJIGA") ~ "VEJIGA",
+  str_detect(string = TOPOGRAFIA, pattern = "VESICAL") ~ "VEJIGA",
+  str_detect(string = TOPOGRAFIA, pattern = "TIROIDES") ~ "TIROIDES",
+  str_detect(string = DIAGNOSTICO, pattern = "LINFOMA") ~ "LINFOMA",
+  str_detect(string = TOPOGRAFIA, pattern = "CEREBRO") ~ "TUMOR INTRACRANEAL",
+  str_detect(string = DIAGNOSTICO, pattern = "MIELOMA") ~ "MIELOMA",
+  str_detect(string = TOPOGRAFIA, pattern = "UTERO") & str_detect(string = DIAGNOSTICO, pattern = "ADENOCARCINOMA") ~ "ADENOCA. UTERINO",
+  str_detect(string = TOPOGRAFIA, pattern = "HIGADO") & str_detect(string = DIAGNOSTICO, pattern = "METASTASIS") ~ "METASTASIS EN HIGADO",
+  str_detect(string = DIAGNOSTICO, pattern = "HEPATOCELULAR") ~ "CANCER DE HIGADO",
+  str_detect(string = TOPOGRAFIA, pattern = "ESOFAGO") ~ "ESOFAGO", 
+  str_detect(string = TOPOGRAFIA, pattern = "PIEL") !=  str_detect(string = DIAGNOSTICO, pattern = "MELANOMA") ~ "PIEL NO MELANOMA",
+  str_detect(string = DIAGNOSTICO, pattern = "MELANOMA") ~ "MELANOMA", 
+  TRUE ~ "OTROS TIPOS DE CANCER"))
+
+
+
+tabla2018 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2018) %>%
+      count(SITIO_DE_PRIMARIO, sort = T) %>%
+      rename(PRIMARIO = SITIO_DE_PRIMARIO, Frecuencia = n) 
+
+tabla2019 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2019) %>%
+      count(SITIO_DE_PRIMARIO, sort = T) %>%
+      rename(PRIMARIO = SITIO_DE_PRIMARIO, Frecuencia = n) 
+
+tabla2020 <-TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2020) %>%
+      count(SITIO_DE_PRIMARIO, sort = T) %>%
+      rename(PRIMARIO = SITIO_DE_PRIMARIO, Frecuencia = n) 
+
+tabla2019[19,1] <- " "
+
+tabla <- bind_cols(tabla2018, tabla2019, tabla2020) %>% 
+      flextable() %>% theme_zebra() %>% 
+  delete_part(part = "header") %>% 
+      fontsize(size = 8, part = "all") %>% 
+      width(width = 1) %>% 
+  add_header(PRIMARIO...1 = "Sitio Primario", Frecuencia...2 = "Frec.", PRIMARIO...3 = "Sitio Primario",  Frecuencia...4 = "Frec.", PRIMARIO...5 = "Sitio Primario", Frecuencia...6 = "Frec.") %>% 
+  add_header(PRIMARIO...1 = "2018", Frecuencia...2 = "2018", PRIMARIO...3 = "2019",  Frecuencia...4 = "2019", PRIMARIO...5 = "2020", Frecuencia...6 = "2020", top =T) %>% 
+  align(align = "center", part = "header") %>% 
+  merge_h(part = "header") %>% 
+  bold(bold = TRUE, part = "header") %>% 
+   add_header(PRIMARIO...1 = "Número de casos de cáncer por año y según sitio de localización", Frecuencia...2 = "Número de casos de cáncer por año y según sitio de localización", PRIMARIO...3 = "Número de casos de cáncer por año y según sitio de localización", Frecuencia...4 = "Número de casos de cáncer por año y según sitio de localización", PRIMARIO...5 = "Número de casos de cáncer por año y según sitio de localización", Frecuencia...6 = "Número de casos de cáncer por año y según sitio de localización") %>% merge_h(part = "header") %>% bold(part = "header") %>% 
+  align(align = "center", part = "header")
+
+tabla
+
+
+
+```
+
+\newpage
+
+El siguiente gráfico permite comparar la frecuencia interanual de los 10 sitios primarios principales hallados en la institución.
+
+```{r Comparación 10 sitios primarios principales, echo=FALSE, fig.align="center", fig.width=9, message=FALSE, warning=FALSE, dpi=600}
+
+library(tidyverse)
+
+library(lubridate)
+
+library(readxl)
+
+
+Base <- read_xlsx("BASE SIN PAPS POMAR  2018 2019 2020.xlsx") 
+
+
+Base <- Base %>%
+  mutate(`FECHA NAC`= ymd_hms(`FECHA NAC`), `FECHA RECEP` = ymd_hms(`FECHA RECEP`)) %>% 
+  mutate(`FECHA NAC` =  as_date(`FECHA NAC`),
+         `FECHA RECEP` = as_date(`FECHA RECEP`)) %>%  
+  mutate(TOPOGRAFIA = str_to_upper(TOPOGRAFIA), DIAGNOSTICO = str_to_upper(DIAGNOSTICO))
+
+BASE_SINPAPS <- Base %>% mutate (CANCER = case_when(str_detect(string = DIAGNOSTICO, pattern = "CARCINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LINFOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINOIDE") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MELANOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LEUCEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SARCOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLASMOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MESOTELIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "ASTROCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "OLIGODENDROGLIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MENINGIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GLIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "EPENDIMOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLEXOS COROIDEOS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLEXO COROIDES") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PINEOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MEDULOEPITELIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SCHWANNOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HEMANGIOPERICITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOPROLIF") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELODISPLAS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HISTIOCITOSIS DE CELULAS DE LANGERHANS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MATASTASIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "TUMOR MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "NEOPLASIA MALIGNA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "NEOPLASICO MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINOMATOSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALIGNA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PROLACTINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "FEOCROMOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SARCOMATOSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SEMINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GERMINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "INVASOR") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "INVASORA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GERMINALES") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "POLIEMBRIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HIPERNEFROMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HODGKIN") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MICOSIS FUNGOIDE") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SINDROME DE SEZARY") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALTOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MASTOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTICO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTICA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MACROGLOBULINEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "POLICITEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOESCLEROSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOFIBROSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "TROMBOCITOPENIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BOWEN ") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SERTOLI") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LEYDIG") ~ "SI",                                                                                                       str_detect(string =                                                                                      DIAGNOSTICO, pattern = "ANEMIA REFRACTARIA") ~ "SI")) %>% 
+  mutate (AÑO = case_when(str_detect(string = `FECHA RECEP`, pattern = "^2018") ~ "2018", 
+                          str_detect(string = `FECHA RECEP`, pattern = "^2019") ~ "2019",
+                          str_detect(string = `FECHA RECEP`, pattern = "^2020") ~ "2020"))
+
+
+POSITIVOS <- BASE_SINPAPS %>% filter(CANCER == "SI") %>% 
+  select(`NRO INF`, NOMBRE, SEXO, `NRO DOC`, `FECHA NAC`,`FECHA RECEP`, EDAD,TOPOGRAFIA, DIAGNOSTICO, DOMICILIO, LOCALIDAD, AÑO) %>% 
+  arrange(`NRO DOC`)
+
+
+TOPOGRAFIAS_sin_multiples <- POSITIVOS %>% distinct(NOMBRE, .keep_all = TRUE) %>% 
+  mutate(SITIO_DE_PRIMARIO = case_when(
+  str_detect(string = TOPOGRAFIA, pattern = "MAMA") ~ "MAMA",
+  str_detect(string = TOPOGRAFIA, pattern = "COLON|RECT") ~ "COLON-RECTO",
+  str_detect(string = TOPOGRAFIA, pattern = "PROST") ~ "PROSTATA",
+  str_detect(string = TOPOGRAFIA, pattern = "PULM") ~ "PULMON",
+  str_detect(string = TOPOGRAFIA, pattern = "RIÑ") ~ "RENAL",
+  str_detect(string = TOPOGRAFIA, pattern = " PANCR") ~ "PANCREAS",
+  str_detect(string = TOPOGRAFIA, pattern = "CERVIX") ~ "CERVIX, incluido in situ",
+  str_detect(string = TOPOGRAFIA, pattern = "CUELLO UTERINO") ~ "CERVIX, incluido in situ",
+  str_detect(string = TOPOGRAFIA, pattern = "ESTOMAGO") ~ "ESTOMAGO",
+  str_detect(string = TOPOGRAFIA, pattern = "GASTRIC") ~ "ESTOMAGO",
+  str_detect(string = TOPOGRAFIA, pattern = "VEJIGA") ~ "VEJIGA",
+  str_detect(string = TOPOGRAFIA, pattern = "VESICAL") ~ "VEJIGA",
+  str_detect(string = TOPOGRAFIA, pattern = "TIROIDES") ~ "TIROIDES",
+  str_detect(string = DIAGNOSTICO, pattern = "LINFOMA") ~ "LINFOMA",
+  str_detect(string = TOPOGRAFIA, pattern = "CEREBRO") ~ "TUMOR INTRACRANEAL",
+  str_detect(string = DIAGNOSTICO, pattern = "MIELOMA") ~ "MIELOMA",
+  str_detect(string = TOPOGRAFIA, pattern = "UTERO") & str_detect(string = DIAGNOSTICO, pattern = "ADENOCARCINOMA") ~ "ADENOCA. UTERINO",
+  str_detect(string = TOPOGRAFIA, pattern = "HIGADO") & str_detect(string = DIAGNOSTICO, pattern = "METASTASIS") ~ "METASTASIS EN HIGADO",
+  str_detect(string = DIAGNOSTICO, pattern = "HEPATOCELULAR") ~ "CANCER DE HIGADO",
+  str_detect(string = TOPOGRAFIA, pattern = "ESOFAGO") ~ "ESOFAGO", 
+  str_detect(string = TOPOGRAFIA, pattern = "PIEL") !=  str_detect(string = DIAGNOSTICO, pattern = "MELANOMA") ~ "PIEL NO MELAN",
+  str_detect(string = DIAGNOSTICO, pattern = "MELANOMA") ~ "MELANOMA", 
+  TRUE ~ "OTROS TIPOS DE CANCER"))
+
+
+nt_2018 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2018) %>% nrow()
+
+n_2018 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2018, SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER") %>% nrow()
+
+
+nt_2019 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2019) %>% nrow()
+
+n_2019 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2019, SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER") %>% nrow()
+
+nt_2020 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2020) %>% nrow()
+
+n_2020 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == 2020, SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER") %>% nrow()
+
+
+ ##POR LA INICIAL!!!!!!!!!!!!!!!!
+
+graf1 <- TOPOGRAFIAS_sin_multiples %>% 
+  filter(AÑO == 2018) %>% 
+  count(SITIO_DE_PRIMARIO, sort = T) %>% 
+  filter(SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER" ) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = fct_rev(fct_reorder(SITIO_DE_PRIMARIO, n, min)), y = n,fill = SITIO_DE_PRIMARIO)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("turquoise2", "tomato2", "steelblue4","salmon2", "springgreen2", "pink2", "goldenrod", "chocolate3", "gray40", "olivedrab")) +
+theme(axis.text.x = element_text(angle = 45, hjust=1))	+ 
+  scale_y_continuous(limits = c(0,500), breaks = seq(0,500, by = 50)) +
+  xlab("") +
+  ylab("Frecuencia") +
+  guides(fill = "none") +
+  labs(title = "Año 2018",
+       caption = paste("N = ", n_2018, " de ", nt_2018)) 
+  
+
+graf2 <- TOPOGRAFIAS_sin_multiples %>% 
+  filter(AÑO == 2019) %>% 
+  count(SITIO_DE_PRIMARIO, sort = T) %>% 
+  filter(SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER" ) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = fct_rev(fct_reorder(SITIO_DE_PRIMARIO, n, min)), y = n,fill = SITIO_DE_PRIMARIO)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("turquoise2", "tomato2", "steelblue4", "salmon2","springgreen2", "pink2", "goldenrod", "chocolate3", "gray40", "olivedrab")) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))	+
+  scale_y_continuous(limits = c(0,500), breaks = seq(0,500, by = 50)) +
+  xlab("") +
+  ylab("Frecuencia") +
+  guides(fill = "none") +
+  labs(title = "Año 2019",
+       caption = paste("N = ", n_2019, " de ", nt_2019))  
+
+graf3 <- TOPOGRAFIAS_sin_multiples %>% 
+  filter(AÑO == 2020) %>% 
+  count(SITIO_DE_PRIMARIO, sort = T) %>% 
+  filter(SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER" ) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = fct_rev(fct_reorder(SITIO_DE_PRIMARIO, n, min)), y = n,fill = SITIO_DE_PRIMARIO)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("yellow2","turquoise2", "tomato2", "steelblue4","springgreen2" , "pink2", "goldenrod", "chocolate3", "violetred3", "olivedrab")) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))	+ 
+  scale_y_continuous(limits = c(0,500), breaks = seq(0,500, by = 50)) +
+  xlab("") +
+  ylab("Frecuencia") +
+  guides(fill = "none") +
+  labs(title = "Año 2020",
+       caption = paste("N = ", n_2020, " de ", nt_2020)) 
+
+
+
+
+library(patchwork)
+  
+
+patchwork <- graf1 + graf2 + graf3
+patchwork + plot_annotation(
+  title = "Gráfico comparativo de la frecuencia de las distintas localizaciones de casos de cáncer \n por año de diagnóstico"
+)
+
+
+
+
+
+```
+
+```{r Resumen sitios primarios, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+
+library(lubridate)
+
+library(readxl)
+
+library(scales)
+
+library(ggrepel)
+
+library(gtsummary)
+
+
+
+Base <- read_xlsx("BASE SIN PAPS POMAR  2018 2019 2020.xlsx") 
+
+
+Base <- Base %>%
+  mutate(`FECHA NAC`= ymd_hms(`FECHA NAC`), `FECHA RECEP` = ymd_hms(`FECHA RECEP`)) %>% 
+  mutate(`FECHA NAC` =  as_date(`FECHA NAC`),
+         `FECHA RECEP` = as_date(`FECHA RECEP`)) %>%  
+  mutate(TOPOGRAFIA = str_to_upper(TOPOGRAFIA), DIAGNOSTICO = str_to_upper(DIAGNOSTICO))
+
+
+BASE_SINPAPS <- Base %>% mutate (CANCER = case_when(str_detect(string = DIAGNOSTICO, pattern = "CARCINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LINFOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINOIDE") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MELANOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LEUCEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SARCOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLASMOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MESOTELIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "ASTROCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "OLIGODENDROGLIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MENINGIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GLIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "EPENDIMOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLEXOS COROIDEOS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PLEXO COROIDES") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PINEOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MEDULOEPITELIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SCHWANNOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HEMANGIOPERICITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOPROLIF") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELODISPLAS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HISTIOCITOSIS DE CELULAS DE LANGERHANS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MATASTASIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "TUMOR MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "NEOPLASIA MALIGNA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "NEOPLASICO MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINOMATOSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALIGNO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALIGNA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "PROLACTINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "CARCINO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "FEOCROMOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SARCOMATOSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SEMINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GERMINOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "INVASOR") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "INVASORA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "GERMINALES") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "POLIEMBRIOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HIPERNEFROMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "HODGKIN") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MICOSIS FUNGOIDE") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SINDROME DE SEZARY") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MALTOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MASTOCITOMA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTICO") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BLASTICA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MACROGLOBULINEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "POLICITEMIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOESCLEROSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "MIELOFIBROSIS") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "TROMBOCITOPENIA") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "BOWEN ") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "SERTOLI") ~ "SI",
+                                                            str_detect(string = DIAGNOSTICO, pattern = "LEYDIG") ~ "SI",                                                                                                       str_detect(string =                                                                                      DIAGNOSTICO, pattern = "ANEMIA REFRACTARIA") ~ "SI")) %>% 
+  mutate (AÑO = case_when(str_detect(string = `FECHA RECEP`, pattern = "^2018") ~ "2018", 
+                          str_detect(string = `FECHA RECEP`, pattern = "^2019") ~ "2019",
+                          str_detect(string = `FECHA RECEP`, pattern = "^2020") ~ "2020"))
+
+
+POSITIVOS <- BASE_SINPAPS %>% filter(CANCER == "SI") %>% 
+  select(`NRO INF`, NOMBRE, SEXO, `NRO DOC`, `FECHA NAC`,`FECHA RECEP`, EDAD,TOPOGRAFIA, DIAGNOSTICO, DOMICILIO, LOCALIDAD, AÑO) %>% 
+  arrange(`NRO DOC`)
+
+
+
+TOPOGRAFIAS_sin_multiples <- POSITIVOS %>% distinct(NOMBRE, .keep_all = TRUE) %>% 
+  mutate(SITIO_DE_PRIMARIO = case_when(
+  str_detect(string = TOPOGRAFIA, pattern = "MAMA") ~ "MAMA",
+  str_detect(string = TOPOGRAFIA, pattern = "COLON|RECT") ~ "COLON-RECTO",
+  str_detect(string = TOPOGRAFIA, pattern = "PROST") ~ "PROSTATA",
+  str_detect(string = TOPOGRAFIA, pattern = "PULM") ~ "PULMON",
+  str_detect(string = TOPOGRAFIA, pattern = "RIÑ") ~ "RENAL",
+  str_detect(string = TOPOGRAFIA, pattern = " PANCR") ~ "PANCREAS",
+  str_detect(string = TOPOGRAFIA, pattern = "CERVIX") ~ "CERVIX, incluido in situ",
+  str_detect(string = TOPOGRAFIA, pattern = "CUELLO UTERINO") ~ "CERVIX, incluido in situ",
+  str_detect(string = TOPOGRAFIA, pattern = "ESTOMAGO") ~ "ESTOMAGO",
+  str_detect(string = TOPOGRAFIA, pattern = "GASTRIC") ~ "ESTOMAGO",
+  str_detect(string = TOPOGRAFIA, pattern = "VEJIGA") ~ "VEJIGA",
+  str_detect(string = TOPOGRAFIA, pattern = "VESICAL") ~ "VEJIGA",
+  str_detect(string = TOPOGRAFIA, pattern = "TIROIDES") ~ "TIROIDES",
+  str_detect(string = DIAGNOSTICO, pattern = "LINFOMA") ~ "LINFOMA",
+  str_detect(string = TOPOGRAFIA, pattern = "CEREBRO") ~ "TUMOR INTRACRANEAL",
+  str_detect(string = DIAGNOSTICO, pattern = "MIELOMA") ~ "MIELOMA",
+  str_detect(string = TOPOGRAFIA, pattern = "UTERO") & str_detect(string = DIAGNOSTICO, pattern = "ADENOCARCINOMA") ~ "ADENOCA. UTERINO",
+  str_detect(string = TOPOGRAFIA, pattern = "HIGADO") & str_detect(string = DIAGNOSTICO, pattern = "METASTASIS") ~ "METASTASIS EN HIGADO",
+  str_detect(string = DIAGNOSTICO, pattern = "HEPATOCELULAR") ~ "CANCER DE HIGADO",
+  str_detect(string = TOPOGRAFIA, pattern = "ESOFAGO") ~ "ESOFAGO", 
+  str_detect(string = TOPOGRAFIA, pattern = "PIEL") !=  str_detect(string = DIAGNOSTICO, pattern = "MELANOMA") ~ "PIEL NO MELANOMA",
+  str_detect(string = DIAGNOSTICO, pattern = "MELANOMA") ~ "MELANOMA", 
+  TRUE ~ "OTROS TIPOS DE CANCER"),
+  EDAD = if_else(EDAD == 0, NA_real_, EDAD))
+
+
+media_edad_mujer <- round(mean(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$SEXO == "F"], na.rm = T),1)
+
+media_edad_hombre <- round(mean(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$SEXO == "M"], na.rm = T),1)
+ 
+desvio_edad_mujer <- round(sd(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$SEXO == "F"], na.rm = T),1)
+
+desvio_edad_hombre <- round(sd(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$SEXO == "M"], na.rm = T),1)
+```
+
+La media de edad de los casos de cáncer fue `r media_edad_mujer` años en las mujeres (DS `r desvio_edad_mujer`) y `r media_edad_hombre` en los varones (DS `r desvio_edad_hombre`).
+
+La siguiente tabla refleja las frecuencias según localización del sitio primario discriminadas por sexo.
+
+```{r, echo=F}
+TOPOGRAFIAS_sin_multiples %>% select(SITIO_DE_PRIMARIO, SEXO) %>% 
+  tbl_summary(by = SEXO,
+    statistic = list(all_categorical() ~ "{n} ({p}%)"),
+    digits = all_continuous() ~ 2,
+    label = SITIO_DE_PRIMARIO ~ "Sitio Primario",
+    missing_text = "S/D"
+  ) %>% 
+  modify_header(update = list(
+  label ~ "**Variable**"
+)) %>% as_flex_table() %>% 
+  add_header_lines(top = T, values = "Frecuencias absolutas y relativas de casos de cáncer \npor sexo y según localización")
+  
+  
+  
+  # Frecuencias absolutas y relativas de casos de cáncer por sexo y según localización"
+```
+
+**Comentarios finales**
+
+Los datos de esta institución formarán parte de los informes de incidencias anuales del Partido de General Pueyrredón producidos por el Registro de cáncer. En este sentido, la calidad de sus datos contribuye a la generación de información precisa y válida sobre la magnitud de ocurrencia del cáncer en el Partido, posibilitando asimismo la comparación con otras localidades y el análisis de tendencia.
