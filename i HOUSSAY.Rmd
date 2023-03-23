@@ -1,0 +1,352 @@
+---
+title: 
+author: 
+date: 
+output:  
+   word_document:
+     reference_docx: Plantilla.docx
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+
+##INSTRUCCIONES: 1. CAMBIAR INSTITUCION/PROFESIONAL, DIRECCION , AÑOS Y FECHA.2.MODIFICAR COLORES DE LOS GRAFICOS DE BARRAS SEGUN FRECUENCIAS DE PRIMARIOS
+
+
+```
+
+![](orden%20firmas%20ultimo%20ultimo%20recortado.png)
+
+# CASOS INCIDENTES DE CANCER
+
+## Años 2019, 2020, 2021
+
+# HOSPITAL HOUSSAY
+
+## 
+
+#### **Hospital Houssay**
+
+#### **Instituto Nacional del Cáncer**
+
+#### **Registro Poblacional de Cáncer del Partido de General Pueyrredón**
+
+#### 
+
+#### **Mar del Plata, 19 de Abril de 2022**
+
+## 
+
+##### 
+
+\newpage
+
+**Introducción**
+
+El Registro Poblacional de Cáncer del Partido de General Pueyrredón realiza sus funciones en el Departamento de Investigación Epidemiológica del Instituto Nacional de Epidemiología "Dr. Juan H. Jara" (INE).
+
+El INE forma parte de la Administración Nacional de Laboratorios e Institutos en Salud (A.N.L.I.S.), la cual depende del Ministerio de Salud de la Nación.
+
+El Registro comenzó a funcionar a partir del 1º de enero del 2013 y forma parte de la red argentina de registros poblacionales, que se encuentra nucleada en el Instituto Nacional del Cáncer. Su equipo se encuentra conformado por los siguientes profesionales:
+
+Gabriel Amezqueta (Enfermero), Rodrigo Sabuda (Técnico en Imágenes), Christian Ballejo (Especialista en Informática), Sebastian Bienaimé (Médico Especialista en Medicina General y Familiar) y Ramiro Dana Smith (Médico Especialista en Medicina Interna y referente del Registro).
+
+El protocolo de recolección, clasificación y codificación de los datos se realiza siguiendo las normativas de la Agencia Internacional de Investigación en Cáncer, que es dependiente de la Organización Mundial de la Salud.
+
+Son registrados los casos incidentes de cáncer del Partido de General Pueyrredón de forma anual. El análisis de los datos permite luego calcular tasas de incidencia de cáncer, para conocer el riesgo de enfermar de cáncer que presenta nuestra población, y compararlo con los datos de los demás Registros Poblacionales.
+
+El registro de cáncer forma parte de una estrategia de vigilancia epidemiológica que tiene como propósito indagar cuales son los tipos de cáncer de mayor incidencia en nuestra región, con el fin de implementar acciones adecuadamente direccionadas para la promoción y prevención de la salud.
+
+\newpage
+
+**Resultados**
+
+Este informe refleja la frecuencia de casos de cáncer según cada sitio de tumor primario. Fueron incluidos también los síndromes mielodisplásicos y mieloproliferativos, y los tumores intracraneales benignos.
+
+Para el procesamiento de las bases de datos y la visualización de resultados fue utilizado el lenguaje R, corriendo en entorno RStudio.
+
+La siguiente tabla muestra la frecuencia de casos de comportamiento maligno según año de registro.
+
+```{r, Grafico_de_totales, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+
+library(lubridate)
+
+library(readxl)
+
+library(flextable)
+
+library(janitor)
+
+library(cowplot)
+
+library(gtsummary)
+
+
+POSITIVOS <- read_xlsx("POSITIVOS_HOUSSAY_2019_012022.xlsx") %>% 
+  mutate(GÉNERO = if_else(GÉNERO == "NA", NA_character_, GÉNERO))
+
+
+POSITIVOS_19_20_21 <-   POSITIVOS %>% filter(AÑO %in% c(2019, 2020, 2021)) %>% 
+  mutate(AÑO = as.character(AÑO))
+
+POSITIVOS_19_20_21 %>% 
+ count(AÑO) %>%  rename(Frecuencia = n) %>% 
+  flextable() %>% autofit() %>%  theme_zebra() %>% add_header(AÑO = "Total de casos de cáncer por año", Frecuencia = "Total de casos de cáncer por año") %>% merge_h(part = "header") %>% bold(part = "header") %>% colformat_num(j = "Frecuencia", big.mark = "")
+
+```
+
+El siguiente gráfico muestra la frecuencia de las principales localizaciones de cáncer.
+
+```{r, Distribución_de_los_sitios_primarios, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+
+TOPOGRAFIAS_sin_multiples <- POSITIVOS_19_20_21 %>%  
+  mutate(SITIO_DE_PRIMARIO = case_when(
+    str_detect(string = DIAGNOSTICO, pattern = "MAMA") ~ "MAMA",
+    str_detect(string = DIAGNOSTICO, pattern = "PROST") &
+      str_detect(string = DIAGNOSTICO,
+                 pattern = "UROTELIAL" , negate = T )~ "PROSTATA",
+    str_detect(string = DIAGNOSTICO, pattern = "PULM|BRONQ") ~ "PULMON",
+    str_detect(string = DIAGNOSTICO, pattern = "RIÑ| REN|RIÑON") &
+      str_detect(string = DIAGNOSTICO, pattern = "HEPATOCARCINOMA")~ "RENAL",
+    str_detect(string = DIAGNOSTICO, pattern = " PANCR") |
+      str_detect(string = DIAGNOSTICO, pattern = "PANCRE")~ "PANCREAS",
+    str_detect(string = DIAGNOSTICO, pattern = "CERVIX|CUELLO UTERINO") &
+      str_detect(string = DIAGNOSTICO, pattern = "MAMA", negate = T) ~ "CERVIX, incluido in situ",
+    str_detect(string = DIAGNOSTICO, pattern = "ESOFAGO")  ~ "ESOFAGO", 
+    str_detect(string = DIAGNOSTICO, pattern = "ESTOMAGO") & 
+      str_detect(string = DIAGNOSTICO, pattern = "COLON", negate = T) &
+      str_detect(string = DIAGNOSTICO, pattern = "PANCR", negate = T) ~ "ESTOMAGO",
+    str_detect(string = DIAGNOSTICO, pattern = "GASTR") & 
+      str_detect(string = DIAGNOSTICO, pattern = "ANILLO DE SELLO", negate = F) ~ "ESTOMAGO",
+    str_detect(string = DIAGNOSTICO, pattern = "COLON| RECT|CIEGO") ~ "COLON-RECTO",
+    str_detect(string = DIAGNOSTICO, pattern = "VEJIGA") ~ "VEJIGA",
+    str_detect(string = DIAGNOSTICO, pattern = "TIROIDES") ~ "TIROIDES",
+    str_detect(string = DIAGNOSTICO, pattern = "LINFOMA|LEUCEMIA") 
+    ~ "LEUCEMIAS Y LINFOMAS",
+    str_detect(string = DIAGNOSTICO, pattern = "CEREBRO|
+               MENINGIOMA|GLIOBLASTOMA|GLIOMA") ~ "TUMOR INTRACRANEAL",
+    str_detect(string = DIAGNOSTICO, pattern = "MIELOMA|PLASMOCITOMA") 
+    ~ "MIELOMAS Y PLASMOCITOMAS",
+    str_detect(string = DIAGNOSTICO, pattern = "UTERO|ENDOMETRIO")  ~ "UTERO",
+    str_detect(string = DIAGNOSTICO, pattern = "HIGADO")  ~ "NEOPLASIA MALIGNA EN HIGADO",
+    str_detect(string = DIAGNOSTICO, pattern = "COLANGIOCARCINOMA") ~ "COLANGIOCARCINOMA DE VIAS BILIARES",
+    str_detect(string = DIAGNOSTICO, pattern = "PIEL|ESCAMOCELULAR|LABIO|
+               BASOCELULAR|PABELLON") &
+      str_detect(string = DIAGNOSTICO, pattern = "MELANOMA", negate = T) &
+      str_detect(string = DIAGNOSTICO, pattern = "DUCTAL", negate = T) ~ "PIEL NO MELANOMA",
+    str_detect(string = DIAGNOSTICO, pattern = "MELANOMA") ~ "MELANOMA",
+    str_detect(string = DIAGNOSTICO, pattern = "LENGUA") ~ "LENGUA",
+    str_detect(string = DIAGNOSTICO, pattern = "LARINGE") ~ "LARINGE",
+    str_detect(string = DIAGNOSTICO, pattern = "HUESO") & str_detect(string = DIAGNOSTICO, pattern = "METASTASIS|SECUNDARIA") ~ "METASTASIS EN HUESO",
+    str_detect(string = DIAGNOSTICO, pattern = "HEPATOCELULAR|HEPATOCARCINOMA|COLANGIOCARCINOMA") ~ "CANCER DE HIGADO",
+    str_detect(string = DIAGNOSTICO, pattern = "SENO MAXILAR") ~ "SENO MAXILAR",
+    str_detect(string = DIAGNOSTICO, pattern = "OROFARINGE") ~ "OROFARINGE",
+    str_detect(string = DIAGNOSTICO, pattern = "ANAL") ~ "ANO",
+    str_detect(string = DIAGNOSTICO, pattern = "NASAL") ~ "CAVIDAD NASAL",
+    str_detect(string = DIAGNOSTICO, pattern = "MIELOPROLIFERATIV|
+               MIELODISPLASICO|POLICITEMIA|MIELOFIBROSIS") ~ "MIELOPROLIFERATIVO/MIELODISPLASICO",
+    str_detect(string = DIAGNOSTICO, pattern = "OVARIO") ~ "OVARIO",
+    str_detect(string = DIAGNOSTICO, pattern = "SARCOMA") ~ "SARCOMA",
+    str_detect(string = DIAGNOSTICO, pattern = "TESTICULO") ~ "TESTICULO",
+    str_detect(string = DIAGNOSTICO, pattern = "PENE") ~ "PENE",
+    str_detect(string = DIAGNOSTICO, pattern = "VAGINA") ~ "VAGINA",
+    str_detect(string = DIAGNOSTICO, pattern = "VULVA") ~ "VULVA",
+    TRUE ~ "OTROS TIPOS DE CANCER"),
+   EDAD = if_else(EDAD == 0, NA_real_, EDAD))
+
+
+
+tabla2019 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == "2019") %>%
+      count(SITIO_DE_PRIMARIO, sort = T) %>%
+      rename(PRIMARIO = SITIO_DE_PRIMARIO, Frecuencia = n) 
+
+tabla2020 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == "2020") %>%
+      count(SITIO_DE_PRIMARIO, sort = T) %>%
+      rename(PRIMARIO = SITIO_DE_PRIMARIO, Frecuencia = n) 
+
+tabla2021 <-TOPOGRAFIAS_sin_multiples %>% filter(AÑO == "2021") %>%
+      count(SITIO_DE_PRIMARIO, sort = T) %>%
+      rename(PRIMARIO = SITIO_DE_PRIMARIO, Frecuencia = n) 
+
+
+tabla2019[31:33,1] <- " "
+tabla2021[33,1] <- " "
+
+
+tabla <- bind_cols(tabla2019, tabla2020, tabla2021) %>% 
+      flextable() %>% theme_zebra() %>% 
+  delete_part(part = "header") %>% 
+      fontsize(size = 8, part = "all") %>% 
+      width(width = 1) %>% 
+  add_header(PRIMARIO...1 = "Sitio Primario", Frecuencia...2 = "Frec.", PRIMARIO...3 = "Sitio Primario",  Frecuencia...4 = "Frec.", PRIMARIO...5 = "Sitio Primario", Frecuencia...6 = "Frec.") %>% 
+  add_header(PRIMARIO...1 = "2019", Frecuencia...2 = "2019", PRIMARIO...3 = "2020",  Frecuencia...4 = "2020", PRIMARIO...5 = "2021", Frecuencia...6 = "2021", top =T) %>% 
+  align(align = "center", part = "header") %>% 
+  merge_h(part = "header") %>% 
+  bold(bold = TRUE, part = "header") %>% 
+   add_header(PRIMARIO...1 = "Número de casos de cáncer por año y según sitio de localización", Frecuencia...2 = "Número de casos de cáncer por año y según sitio de localización", PRIMARIO...3 = "Número de casos de cáncer por año y según sitio de localización", Frecuencia...4 = "Número de casos de cáncer por año y según sitio de localización", PRIMARIO...5 = "Número de casos de cáncer por año y según sitio de localización", Frecuencia...6 = "Número de casos de cáncer por año y según sitio de localización") %>% merge_h(part = "header") %>% bold(part = "header") %>% 
+  align(align = "center", part = "header")
+
+tabla
+
+
+
+```
+
+\newpage
+
+El siguiente gráfico permite comparar la frecuencia interanual de los 10 sitios primarios principales hallados en la institución.
+
+```{r Comparación 10 sitios primarios principales, echo=FALSE, fig.align="center", fig.width=9, message=FALSE, warning=FALSE, dpi=600}
+
+
+
+
+nt_2019 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == "2019") %>% nrow()
+
+n_2019 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == "2019", SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER") %>% nrow()
+
+
+nt_2020 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == "2020") %>% nrow()
+
+n_2020 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == "2020", SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER") %>% nrow()
+
+nt_2021 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == "2021") %>% nrow()
+
+n_2021 <- TOPOGRAFIAS_sin_multiples %>% filter(AÑO == "2021", SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER") %>% nrow()
+
+
+ ##prueba 
+graf1 <- TOPOGRAFIAS_sin_multiples %>% 
+  filter(AÑO == "2019") %>% 
+  count(SITIO_DE_PRIMARIO, sort = T) %>% 
+  filter(SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER" ) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = fct_rev(fct_reorder(SITIO_DE_PRIMARIO, n, min)), y = n,fill = SITIO_DE_PRIMARIO)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("tomato2", "brown", "springgreen2","hotpink",
+                               "dodgerblue1", "goldenrod","chocolate3",
+                               "violetred3", "black",  "olivedrab")) +
+theme(axis.text.x = element_text(angle = 45, hjust=1))	+ 
+  scale_y_continuous(limits = c(0,250), breaks = seq(0,250, by = 50)) +
+  xlab("") +
+  ylab("Frecuencia") +
+  guides(fill = "none") +
+  labs(title = "Año 2019",
+       caption = paste("N = ", n_2019, " de ", nt_2019)) 
+  
+
+graf2 <- TOPOGRAFIAS_sin_multiples %>% 
+  filter(AÑO == "2020") %>% 
+  count(SITIO_DE_PRIMARIO, sort = T) %>% 
+  filter(SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER" ) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = fct_rev(fct_reorder(SITIO_DE_PRIMARIO, n, min)), y = n,fill = SITIO_DE_PRIMARIO)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("tomato2", "maroon1","brown", "springgreen2","hotpink", "dodgerblue1", "goldenrod","chocolate3",                               "violetred3", "olivedrab")) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))	+
+  scale_y_continuous(limits = c(0,250), breaks = seq(0,250, by = 50)) +
+  xlab("") +
+  ylab("Frecuencia") +
+  guides(fill = "none") +
+  labs(title = "Año 2020",
+       caption = paste("N = ", n_2020, " de ", nt_2020))  
+
+graf3 <- TOPOGRAFIAS_sin_multiples %>% 
+  filter(AÑO == "2021") %>% 
+  count(SITIO_DE_PRIMARIO, sort = T) %>% 
+  filter(SITIO_DE_PRIMARIO != "OTROS TIPOS DE CANCER" ) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = fct_rev(fct_reorder(SITIO_DE_PRIMARIO, n, min)), y = n,fill = SITIO_DE_PRIMARIO)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("tomato2", "brown", "springgreen2",
+                               "dodgerblue1", "goldenrod","chocolate3",
+                               "violetred3", "chartreuse", "black",  "olivedrab")) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))	+ 
+  scale_y_continuous(limits = c(0,250), breaks = seq(0,250, by = 50)) +
+  xlab("") +
+  ylab("Frecuencia") +
+  guides(fill = "none") +
+  labs(title = "Año 2021",
+       caption = paste("N = ", n_2021, " de ", nt_2021)) 
+
+
+
+
+library(patchwork)
+  
+
+patchwork <- graf1 + graf2 + graf3
+patchwork + plot_annotation(
+  title = "Gráfico comparativo de la frecuencia de las distintas localizaciones de casos de cáncer \n por año de diagnóstico"
+)
+
+
+
+
+
+```
+
+```{r Resumen sitios primarios, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+  
+
+
+media_edad_mujer <- round(mean(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$GÉNERO == "Mujer"], na.rm = T),1)
+
+media_edad_hombre <- round(mean(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$GÉNERO == "Hombre"], na.rm = T),1)
+ 
+desvio_edad_mujer <- round(sd(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$GÉNERO == "Mujer"], na.rm = T),1)
+
+desvio_edad_hombre <- round(sd(TOPOGRAFIAS_sin_multiples$EDAD[TOPOGRAFIAS_sin_multiples$GÉNERO == "Hombre"], na.rm = T),1)
+```
+
+La media de edad de los casos de cáncer fue `r media_edad_mujer` años en las mujeres (DS `r desvio_edad_mujer`) y `r media_edad_hombre` en los hombres (DS `r desvio_edad_hombre`).
+
+La siguiente tabla refleja las frecuencias según localización del sitio primario discriminadas por género.
+
+```{r, echo=F, warning=FALSE, message=F}
+TOPOGRAFIAS_sin_multiples <- TOPOGRAFIAS_sin_multiples %>%  
+  mutate(GÉNERO = replace_na(GÉNERO, replace = "Sin dato")) 
+
+TOPOGRAFIAS_sin_multiples %>% 
+  select(SITIO_DE_PRIMARIO, GÉNERO) %>% 
+  tbl_summary(by = GÉNERO,
+    statistic = list(all_categorical() ~ "{n} ({p}%)"),
+    digits = all_continuous() ~ 2,
+    label = SITIO_DE_PRIMARIO ~ "Sitio Primario",
+    missing_text = "S/D") %>% 
+  modify_header(update = list(label ~ "**Variable**")) %>%
+  as_flextable() %>% 
+  add_header_lines(top = T, values = "Frecuencias absolutas y relativas de casos de cáncer \npor género y según localización")
+  
+  
+  
+  # Frecuencias absolutas y relativas de casos de cáncer por sexo y según localización"
+```
+
+El siguiente gráfico refleja las frecuencias absolutas y relativas de casos de cáncer según localización.
+
+```{r, echo=F, warning=FALSE, message=F}
+TOPOGRAFIAS_sin_multiples %>% select(SITIO_DE_PRIMARIO, GÉNERO) %>% 
+  tbl_summary(
+    statistic = list(all_categorical() ~ "{n} ({p}%)"),
+    digits = all_continuous() ~ 2,
+    label = SITIO_DE_PRIMARIO ~ "Sitio Primario",
+    missing_text = "S/D") %>% 
+  modify_header(update = list(label ~ "**Variable**")) %>%
+  as_flextable() %>% 
+  add_header_lines(top = T, values = "Frecuencias absolutas y relativas de casos de cáncer \n según localización")
+
+```
+
+\newpage
+
+**Comentarios finales**
+
+Los datos de esta institución formarán parte de los informes de incidencias anuales del Partido de General Pueyrredón producidos por el Registro de cáncer. En este sentido, la calidad de sus datos contribuye a la generación de información precisa y válida sobre la magnitud de ocurrencia del cáncer en el Partido, posibilitando asimismo la comparación con otras localidades y el análisis de tendencia.
